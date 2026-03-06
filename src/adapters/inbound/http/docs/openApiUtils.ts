@@ -1,5 +1,4 @@
 // openApiUtils.ts
-import type { SchemaObject } from "openapi3-ts";
 
 // Factory para respostas comuns
 export function response(status: string, schemaRef: string, description?: string) {
