@@ -1,13 +1,15 @@
 // openApiDocument.ts
 import {
   errorResponse,
-  userProperties,
   createUserRequestSchema,
   createCardRequestSchema,
   cardResponseSchema,
   transactionResponseSchema,
-  invoiceResponseSchema
+  invoiceResponseSchema,
+  userProperties
 } from "./schemas";
+
+import { response, requestBody, pathParam, queryParam } from "./openApiUtils";
 
 export const openApiDocument = {
   openapi: "3.0.3",
@@ -49,10 +51,10 @@ export const openApiDocument = {
       post: {
         tags: ["Users"],
         summary: "Criar usuario",
-        requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/CreateUserRequest" } } } },
+        requestBody: requestBody("#/components/schemas/CreateUserRequest"),
         responses: {
-          "201": { description: "Usuario criado", content: { "application/json": { schema: { $ref: "#/components/schemas/UserResponse" } } } },
-          "400": { description: "Erro de validacao", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+          ...response("201", "#/components/schemas/UserResponse", "Usuario criado"),
+          ...response("400", "#/components/schemas/ErrorResponse", "Erro de validacao")
         }
       }
     },
@@ -60,10 +62,10 @@ export const openApiDocument = {
       post: {
         tags: ["Cards"],
         summary: "Criar cartao",
-        requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/CreateCardRequest" } } } },
+        requestBody: requestBody("#/components/schemas/CreateCardRequest"),
         responses: {
-          "201": { description: "Cartao criado", content: { "application/json": { schema: { $ref: "#/components/schemas/CardResponse" } } } },
-          "404": { description: "Usuario nao encontrado", content: { "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } } } }
+          ...response("201", "#/components/schemas/CardResponse", "Cartao criado"),
+          ...response("404", "#/components/schemas/ErrorResponse", "Usuario nao encontrado")
         }
       }
     },
@@ -71,9 +73,9 @@ export const openApiDocument = {
       post: {
         tags: ["Transactions"],
         summary: "Processar transacao",
-        requestBody: { required: true, content: { "application/json": { schema: { $ref: "#/components/schemas/ProcessTransactionRequest" } } } },
+        requestBody: requestBody("#/components/schemas/ProcessTransactionRequest"),
         responses: {
-          "201": { description: "Transacao processada", content: { "application/json": { schema: { $ref: "#/components/schemas/TransactionResponse" } } } }
+          ...response("201", "#/components/schemas/TransactionResponse", "Transacao processada")
         }
       }
     },
@@ -81,33 +83,24 @@ export const openApiDocument = {
       post: {
         tags: ["Transactions"],
         summary: "Cancelar transacao",
-        parameters: [{ name: "transactionId", in: "path", required: true, schema: { type: "string" } }],
-        responses: {
-          "200": { description: "Transacao cancelada", content: { "application/json": { schema: { $ref: "#/components/schemas/TransactionResponse" } } } }
-        }
+        parameters: [pathParam("transactionId")],
+        responses: { ...response("200", "#/components/schemas/TransactionResponse", "Transacao cancelada") }
       }
     },
     "/transactions/{transactionId}/chargeback": {
       post: {
         tags: ["Transactions"],
         summary: "Simular chargeback",
-        parameters: [{ name: "transactionId", in: "path", required: true, schema: { type: "string" } }],
-        responses: {
-          "200": { description: "Chargeback aplicado", content: { "application/json": { schema: { $ref: "#/components/schemas/TransactionResponse" } } } }
-        }
+        parameters: [pathParam("transactionId")],
+        responses: { ...response("200", "#/components/schemas/TransactionResponse", "Chargeback aplicado") }
       }
     },
     "/cards/{cardId}/invoice": {
       get: {
         tags: ["Invoices"],
         summary: "Gerar ou consultar fatura mensal",
-        parameters: [
-          { name: "cardId", in: "path", required: true, schema: { type: "string" } },
-          { name: "referenceMonth", in: "query", required: true, schema: { type: "string", example: "2026-03" } }
-        ],
-        responses: {
-          "200": { description: "Fatura do mes", content: { "application/json": { schema: { $ref: "#/components/schemas/InvoiceResponse" } } } }
-        }
+        parameters: [pathParam("cardId"), queryParam("referenceMonth", "string", "2026-03")],
+        responses: { ...response("200", "#/components/schemas/InvoiceResponse", "Fatura do mes") }
       }
     }
   }
